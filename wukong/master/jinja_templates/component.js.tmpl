@@ -1,0 +1,27 @@
+function {{ func_name }}()
+{
+  Block.prototype.init.call(this);
+  this.type='{{ func_name }}';
+  {% for property in properties %}
+    {% if property.getAttribute('visible') != 'false' %}
+      {% if property.getAttribute('access') != 'readonly' %}
+        var action = this.addAction( new Action('{{ property.getAttribute('name') }}','{{property.getAttribute('datatype')}}'));
+          {% if property.getAttribute('default') %}
+            action.defaultValue = '{{property.getAttribute('default')}}'
+          {% endif %}
+      {% endif %}
+      
+      {% if property.getAttribute('access') != 'writeonly' %}
+        var signal = this.addSignal( new Signal('{{ property.getAttribute('name') }}','{{property.getAttribute('datatype')}}'));
+          {% if property.getAttribute('default') %}
+            signal.defaultValue = '{{property.getAttribute('default')}}'
+          {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+}
+
+
+{{ func_name }}.prototype = new Block();
+{{ func_name }}.prototype.constructor = {{ func_name }};
+Block.register('{{ func_name }}', {{ func_name }});

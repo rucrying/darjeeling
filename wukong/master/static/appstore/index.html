@@ -1,0 +1,195 @@
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<style>
+.appstore-app{
+  width: 200px;
+  height: 85px;
+  display: inline-block;
+  position: absolute;
+  z-index:50;
+  background-color:rgba(0,0,0,0);
+  padding-top:15px;
+  border: dashed 1px #ffffff;
+}
+.appstore-app:hover{
+  border: dashed 1px #c0c0c0;
+}
+.appstore-app img{
+    width:80px;
+    height:80px;
+    float:left;
+}
+.appstore-app > div{
+    margin-left:5px;
+    float:left;
+}
+.appstore-app span{
+    display:block;    
+}
+.appstore-app span.by,.appstore-app span.desc{
+    color:#c0c0c0;
+}
+.app-default-icon{
+    /* should sync with .app-default-icon in fbp2.html */
+    width:80px;
+    height:80px;
+    background-color:#4B8DF9;
+    border-radius: 40px 40px 40px 40px;
+    -moz-border-radius: 40px 40px 40px 40px;
+    -webkit-border-radius: 40px 40px 40px 40px;
+    color:white;
+    font-size:3em;
+    line-height:80px;
+    text-align:center;
+}
+
+</style>
+<div style="width:100%;height:100%;background-image:url(/static/appstore/index.png);background-repeat:no-repeat"></div>
+<div id="application-buttons"></div>
+<script src=""></script>
+<script>
+
+function appStoreInit(closeStore){
+    //application_xmls.js is actually a csv file
+    $.ajaxSetup({ cache: false });
+    $.ajax({
+        url:'/static/appstore/application_xmls.js',
+        dataType:'text',
+        cache:false,
+        success:function(text){
+            loadAppStore(closeStore,text)
+        }
+    })
+}
+function loadAppStore(closeStore,text) {
+    /* parse text from csv string to array */
+    var lines = text.split('\n')
+    var applications = []
+    for (var i=0,line;typeof(line=lines[i]) != 'undefined';i++){    
+        if (line=='' || line.substr(0,1)=='#') continue;
+        var cols = line.split('\t')
+        if (cols.length==4){
+            var app = {
+                name:cols[0],
+                nameprefix:cols[1],
+                url:cols[1]+'.xml',
+                icon:cols[1]+'.png',
+                by:cols[2],
+                desc:cols[3]
+            }
+            applications.push(app)
+        }
+    }
+    /*
+     * Create clickable applications
+     */
+    var tags = []
+    var left_start = 75
+    var left_delta = 235
+    var top_start = 70
+    var top_delta = 105
+    var max_col = 4
+    var max_index = 21
+    var url_prefix = '/static/appstore/'
+    for (var i=0,app;app=applications[i];i++){
+        // Too many in this version
+        if (i >= max_index) break;
+        // recount the top and left
+        var row = Math.floor(i/max_col)
+        var col = i%max_col
+        app.url = url_prefix+app.url
+        app.top = row * top_delta + top_start
+        app.left = col * left_delta + left_start
+        tags.push('<div idx="'+i+'" class="appstore-app" name="'+app.name+'" style="top:'+app.top+'px;left:'+app.left+'px">')
+        tags.push('<div class="app-icon" src="'+url_prefix+'/'+app.icon+'" name="'+app.name.substr(0,1)+'"></div>')
+        tags.push('<div><span class="name">'+app.name+'</span><span class="by">By: '+app.by+'</span><span class="desc">'+app.desc+'</span></div>')
+        tags.push('</div>')
+    }
+    document.getElementById('application-buttons').innerHTML = tags.join('')
+    var clickHandler = function(evt){
+        var appDiv = evt.currentTarget;
+        var app = applications[parseInt(appDiv.getAttribute('idx'))]
+        var app_name = app.name
+
+        var removeAppAction = evt.ctrlKey || evt.metaKey
+        var text = (removeAppAction ? 'Remove from App Store - ' : 'Install') + ' '+app_name+'?'
+        if (!confirm(text)) return;
+        
+        if (removeAppAction){
+            loading('Removing '+app_name)
+            $.post('/appstore/remove', {nameprefix: app.nameprefix}, function(data) {
+              loading(false)
+              closeStore()
+              if (data.status == '1') {
+                alert(data.msg);
+              }
+              else {
+                alert(app_name+' Removed');
+              }
+            });        
+            return;
+        }
+        
+        loading('Downloading... '+app_name)
+        var loadingDiv = document.getElementById('loading')
+        var viewportSize = getViewportSize()
+        loadingDiv.style.width = '300px'
+        loadingDiv.style.height = '150px'
+        loadingDiv.style.left = (viewportSize.width - 300) * 0.5 + 'px';
+        loadingDiv.style.top = '200px';
+        loadingDiv.style.backgroundColor = '#fff'
+        loadingDiv.style.display = 'inline-block'
+        $.ajax({
+            url: app.url,
+            dataType:'text',
+            success: function(content) {
+                loading(false)
+                //var app_name = content.match(/<app_name>(.+)<\/app_name>/)[1]
+                /*
+                 * The <app_name></app_name> is added when this file is downloaded.
+                 * Now, we remove it before sendback to server.
+                 */
+                content = content.replace(/<app_name>.+<\/app_name>/,'<disabled>1</disabled>')
+
+                loading('Installing... '+app_name);
+                $.post('/applications/new', {app_name: app_name,xml:content}, function(data) {
+                  loading(false)
+                  closeStore()
+                  if (data.status == '1') {
+                    alert(data.msg);
+                  }
+                  else {
+                    alert(app_name+' Installed');
+                    application_fill();
+                  }
+                });
+            }
+        });
+    }
+    var appDivs = document.getElementById('application-buttons').querySelectorAll('div.appstore-app')
+    for (var i=0;i<appDivs.length;i++){
+        var appDiv = appDivs[i]
+        appDiv.onclick = clickHandler;
+    }
+    //load app-icon
+    var appIcons = document.querySelectorAll('.app-icon')
+    var loadIcon = function(i){
+        var img = new Image()
+        var src = appIcons[i].getAttribute('src')
+        img.onload = function(){
+            appIcons[i].innerHTML = '<img src="'+src+'"/>'
+        }
+        img.onerror = function(){
+            appIcons[i].innerHTML = '<div class="app-default-icon">'+appIcons[i].getAttribute('name')+'</div>'
+        }
+        img.src = src
+        if (i+1 < appIcons.length) loadIcon(i+1)
+    }
+    loadIcon(0)
+}
+</script>
+</body>
+</html>

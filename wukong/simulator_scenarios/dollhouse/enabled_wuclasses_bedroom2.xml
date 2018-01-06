@@ -1,0 +1,5 @@
+<WuKong>
+    <WuClass name="Light_Actuator" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+</WuKong>

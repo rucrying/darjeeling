@@ -1,0 +1,7 @@
+djConfig {
+	platform = 'posix.mraa.galileo'
+	libraries = ['darjeeling3', 'wkpf_virtual']
+	app = 'wkemptyapp'
+	appArchiveSize = 4096
+}
+

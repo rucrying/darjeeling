@@ -1,0 +1,99 @@
+// Set basic platform properties
+switch (djConfig.getAllPlatforms().last()) {
+    case 'arduino.wudevice':
+        ext.djArchitecture='avr'
+        ext.djMcu='atmega2560'
+        ext.djReprogramFlashPageAddress='0x3F000'
+    break
+    case 'arduino.wutiny':
+        ext.djArchitecture='avr'
+        ext.djMcu='atmega644p'
+        ext.djReprogramFlashPageAddress='0xFC00'
+    break
+    case 'arduino.avrora':
+        ext.djArchitecture='avr'
+        ext.djMcu='atmega128'
+        ext.djReprogramFlashPageAddress='0x1F800'
+    break
+    case 'posix.pc':
+        ext.djArchitecture='native'
+        binaries.all {
+            cCompiler.args "-m64"
+            linker.args "-m64"
+            linker.args "-Wl,-lcrypto,-lssl"
+        }
+    break
+    case 'posix.mraa.raspberrypi':
+        ext.djArchitecture='arm'
+        binaries.all {
+            /* Unsupported by 201602 raspbian, will cause SEGFAULT */
+            cCompiler.args "-mcpu=cortex-a7"
+            cCompiler.args "-mfpu=vfp"
+            cCompiler.args "-mfloat-abi=hard"
+            linker.args "-mcpu=cortex-a7"
+            linker.args "-mfpu=vfp"
+            linker.args "-mfloat-abi=hard"
+
+            cCompiler.args "-I/usr/include/arm-linux-gnueabihf/" /* ssl */
+            cCompiler.args "-I/usr/local/include/" /* mraa */
+            linker.args "-L/usr/local/lib/arm-linux-gnueabihf/" /* mraa */
+            linker.args "-L/usr/lib/arm-linux-gnueabihf/" /* ssl */
+            linker.args "-Wl,-lmraa,-lcrypto,-lssl,-lm"
+        }
+        /* To know the arm-linux-gnueabihf-gcc's default include path
+            $ echo | arm-linux-gnueabihf-gcc -v -x c -E -
+        */
+    break
+    case 'posix.mraa.galileo':
+        ext.djArchitecture='native'
+        binaries.all {
+            cCompiler.args "-march=i386"
+            cCompiler.args "-m32"
+            linker.args "-m32"
+            linker.args "-Wl,-lmraa,-lcrypto,-lssl"
+        }
+    break
+    case ~/^posix.*/:
+        ext.djArchitecture='native'
+    break
+    default:
+        throw new GradleException('Unknown platform: ' + ext.djConfig.platform)
+}
+
+// Specific extras for Intel Galileo/Edison and eBox
+// (native build that will be installed as a service on remote device)
+if (djConfig.getAllPlatforms().last() == 'posix.galileo') {
+    tasks.architectureSpecificAssemble {
+        doLast {
+            copy { from "${configDir}/install_service.sh" into destDir }
+            copy { from "${configDir}/service" into new File(destDir, 'service') }
+        }
+    }
+
+    tasks.addRule("Pattern: install<IP address>: installs the Darjeeling service to the Galileo/Edison at IP address.") { String taskName ->
+        if (taskName.startsWith("install")) {
+            task(taskName) {
+                dependsOn darjeeling
+
+                doLast {
+                    def destIP = (taskName - 'install')
+                    def remoteTmpDir = "/tmp/darjeeling"
+
+                    println "Installing to: " + destIP
+                    exec {
+                        executable 'ssh'
+                        args "root@${destIP}", "rm -rf ${remoteTmpDir}"
+                    }
+                    exec {
+                        executable 'scp'
+                        args '-r', "${buildDir}/darjeeling",  "root@${destIP}:${remoteTmpDir}"
+                    }
+                    exec {
+                        executable 'ssh'
+                        args "root@${destIP}", "cd ${remoteTmpDir}; ./install_service.sh"
+                    }
+                }
+            }
+        }
+    }
+}

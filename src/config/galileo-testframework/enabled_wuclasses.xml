@@ -1,0 +1,11 @@
+<WuKong>
+    <WuClass name="Binary_TestSensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Integer_TestSensor" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+    <WuClass name="Sound" appCanCreateInstances="false">
+    	<CreateInstance />
+    </WuClass>
+</WuKong>

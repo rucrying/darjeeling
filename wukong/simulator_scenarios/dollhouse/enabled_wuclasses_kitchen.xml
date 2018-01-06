@@ -1,0 +1,12 @@
+<WuKong>
+    <WuClass name="Threshold" appCanCreateInstances="true" />
+    <WuClass name="Slider" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Fan" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+    <WuClass name="Temperature_Humidity_Sensor" appCanCreateInstances="false">
+        <CreateInstance />
+    </WuClass>
+</WuKong>
