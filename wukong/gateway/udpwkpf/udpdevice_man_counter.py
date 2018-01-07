@@ -25,6 +25,7 @@ class man_count(WuClass):
         global direction
         if (val ==0):
             if censor_status[0]==1 and censor_status[1]==1:
+                obj.setProperty(2,0)
                 obj.setProperty(2,direction*man_count_pin)
                 censor_status[0]=0
                 censor_status[1]=0
