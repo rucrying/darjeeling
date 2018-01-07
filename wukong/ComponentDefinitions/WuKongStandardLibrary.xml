@@ -226,8 +226,8 @@
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
     <WuClass name="man_count" id="1021" virtual="false" type="hard" >
-        <property name="red_out_line_0" access="readonly" datatype="short" />
-        <property name="red_out_line_1" access="readonly" datatype="short" />
+        <property name="red_out_line_0" access="writeonly" datatype="short" />
+        <property name="red_out_line_1" access="writeonly" datatype="short" />
         <property name="man_count" access="readwrite" datatype="short" />
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
     </WuClass>
@@ -235,7 +235,7 @@
         <property name="refresh_rate" access="readwrite" datatype="refresh_rate" default="100"  />
         <property name="man_count" access="readwrite" datatype="short" />
         <property name="magnet" access="readonly" datatype="short" />
-        <property name="next_target" access="writeonly" datatype="short" />
+        <property name="next_target" access="readonly" datatype="short" />
     </WuClass>
 
 
