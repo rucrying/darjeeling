@@ -15,33 +15,37 @@ if len(sys.argv) <= 2:
 man_count_pin=int(sys.argv[3])
 
 censor_status=[0,0]
+direction=0
 class man_count(WuClass):
     def __init__(self):
         WuClass.__init__(self)
         self.loadClass('man_count')
 
     def update(self,obj,pID=None,val=None):
-        if(val != 0):
+        global direction
+        if (val ==0):
+            if censor_status[0]==1 and censor_status[1]==1:
+                obj.setProperty(2,direction*man_count_pin)
+                censor_status[0]=0
+                censor_status[1]=0
+                print "ID:",man_count_pin,direction
+        if (val != 0):
             if (pID ==0):
                 if(0<val<30):
                     status = val%10
                 if censor_status[1]==0:
                     censor_status[0]=1;
-                    obj.setProperty(2,0)
+                    direction=1
                 elif censor_status[1] == 1:
-                    obj.setProperty(2,-1*man_count_pin)
-                    censor_status[0]=0
-                    censor_status[1]=0
+                    censor_status[0]=1
             elif(pID == 1):
                 status = val%10
                 if censor_status[0]==0:
             	    censor_status[1]=1;
-                    obj.setProperty(2,0)
+                    direction=-1
                 elif censor_status[0] == 1:
-                    obj.setProperty(2,1*man_count_pin)
-                    censor_status[0]=0
-                    censor_status[1]=0
-        
+                    censor_status[1]=1
+
 if __name__ == "__main__":
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
