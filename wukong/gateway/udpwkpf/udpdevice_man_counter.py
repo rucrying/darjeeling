@@ -21,18 +21,18 @@ class man_count(WuClass):
         self.loadClass('center')
 
     def update(self,obj,pID=None,val=None):
-		if (pID ==0):
-			if(0<val<30):
-				status = val%10
-                if censor_status[1]==0:
-                    censor_status[0]=1;
-                    obj.setProperty(2,0)
-                elif censor_status[1] == 1:
-                    obj.setProperty(2,-1*man_count_pin)
-                    censor_status[0]=0
-                    censor_status[1]=0
+        if (pID ==0):
+            if(0<val<30):
+                status = val%10
+            if censor_status[1]==0:
+                censor_status[0]=1;
+                obj.setProperty(2,0)
+            elif censor_status[1] == 1:
+                obj.setProperty(2,-1*man_count_pin)
+                censor_status[0]=0
+                censor_status[1]=0
         elif(pID == 1):
-        	status = val%10
+            status = val%10
             if censor_status[0]==0:
             	censor_status[1]=1;
                 obj.setProperty(2,0)
