@@ -51,17 +51,16 @@ class IOT_Ultrasound(WuClass):
             if init < 10:
                 initial_value = current_value
                 init = init + 1
-                obj.setProperty(0,-1)
             else:
                 if abs(initial_value - current_value) > initial_value/3:
                     blocked = 1
-                    obj.setProperty(0,2+10*int(sys.argv[3]))
+                    obj.setProperty(0,1)
                 else:
                     if blocked == 0:
-                        obj.setProperty(0,0+10*int(sys.argv[3]))
+                        obj.setProperty(0,0)
                     else:
                         blocked = 0
-                        obj.setProperty(0,1+10*int(sys.argv[3]))
+                        obj.setProperty(0,0)
         except IOError:
             print "Error"
 
