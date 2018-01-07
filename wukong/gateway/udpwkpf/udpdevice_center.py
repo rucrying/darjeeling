@@ -52,7 +52,7 @@ def calculate_route(start,destination):
 		counter_clock_cost=0
 		counter_clock_route=[]
 
-		for i in range(0:4):
+		for i in range(0,4):
 			p=start+i
 			if p ==5:
 				p=1
@@ -109,8 +109,6 @@ class IOT_center(WuClass):
 				calculate_route(blind_pos,destination)
 				obj.setProperty(3,now_route[1])
 
-        except IOError:
-            print "Error"
 
 if __name__ == "__main__":
     class MyDevice(Device):
