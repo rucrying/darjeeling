@@ -18,7 +18,7 @@ censor_status=[0,0]
 class man_count(WuClass):
     def __init__(self):
         WuClass.__init__(self)
-        self.loadClass('center')
+        self.loadClass('man_count')
 
     def update(self,obj,pID=None,val=None):
         if (pID ==0):
