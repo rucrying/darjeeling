@@ -21,26 +21,27 @@ class man_count(WuClass):
         self.loadClass('man_count')
 
     def update(self,obj,pID=None,val=None):
-        if (pID ==0):
-            if(0<val<30):
+        if(val != 0):
+            if (pID ==0):
+                if(0<val<30):
+                    status = val%10
+                if censor_status[1]==0:
+                    censor_status[0]=1;
+                    obj.setProperty(2,0)
+                elif censor_status[1] == 1:
+                    obj.setProperty(2,-1*man_count_pin)
+                    censor_status[0]=0
+                    censor_status[1]=0
+            elif(pID == 1):
                 status = val%10
-            if censor_status[1]==0:
-                censor_status[0]=1;
-                obj.setProperty(2,0)
-            elif censor_status[1] == 1:
-                obj.setProperty(2,-1*man_count_pin)
-                censor_status[0]=0
-                censor_status[1]=0
-        elif(pID == 1):
-            status = val%10
-            if censor_status[0]==0:
-            	censor_status[1]=1;
-                obj.setProperty(2,0)
-            elif censor_status[0] == 1:
-                obj.setProperty(2,1*man_count_pin)
-                censor_status[0]=0
-                censor_status[1]=0
-
+                if censor_status[0]==0:
+            	    censor_status[1]=1;
+                    obj.setProperty(2,0)
+                elif censor_status[0] == 1:
+                    obj.setProperty(2,1*man_count_pin)
+                    censor_status[0]=0
+                    censor_status[1]=0
+        
 if __name__ == "__main__":
     class MyDevice(Device):
         def __init__(self,addr,localaddr):
