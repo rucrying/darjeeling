@@ -235,7 +235,10 @@
         <property name="magnet" access="writeonly" datatype="short" />
         <property name="next_target" access="readonly" datatype="short" />
     </WuClass>
-
+    <WuClass name="candle" id="1023" virtual="false" type="hard" >
+        <property name="magnet" access="writeonly" datatype="short" />
+        <property name="next_target" access="writeonly" datatype="short" />
+    </WuClass>    
 
 
 
